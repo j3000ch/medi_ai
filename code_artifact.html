@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>북모먼트 (BookMoment) - 당신의 다음 인생작을 만나는 곳</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fdf8f6',
+                            100: '#f2e8e5',
+                            200: '#e5d0cb',
+                            500: '#c2593f',
+                            600: '#a8432a',
+                            700: '#8c3520',
+                            900: '#4a190e',
+                        },
+                        paper: {
+                            light: '#FAF8F5',
+                            card: '#FFFFFF',
+                            dark: '#0F172A',
+                            darkcard: '#1E293B'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Nanum Myeongjo', 'Georgia', 'serif'],
+                        sans: ['Pretendard', 'Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .font-myeongjo {
+            font-family: 'Nanum Myeongjo', serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+        /* Glassmorphism */
+        .glass-nav {
+            background: rgba(250, 248, 245, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .dark .glass-nav {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        /* Book card 3d hover effect */
+        .book-shadow {
+            box-shadow: 4px 6px 15px -1px rgba(0, 0, 0, 0.15), 1px 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+        .book-shadow-hover {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .book-shadow-hover:hover {
+            transform: translateY(-6px) rotate(1deg);
+            box-shadow: 12px 18px 25px -3px rgba(0, 0, 0, 0.22), 4px 6px 10px -2px rgba(0, 0, 0, 0.12);
+        }
+    </style>
+</head>
+<body class="bg-paper-light dark:bg-paper-dark text-slate-800 dark:text-slate-100 transition-colors duration-300">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-40 glass-nav border-b border-slate-200/80 dark:border-slate-800/80 transition-all">
+        <!-- Top Announcement Bar -->
+        <div class="bg-brand-500 dark:bg-brand-700 text-white text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2">
+            <span>🎉 북모먼트 신규 회원 가입 시 <b>3,000원 쿠폰</b> + 무료배송!</span>
+            <a href="#newsletter" class="underline hover:text-amber-200 text-xs">혜택받기 →</a>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20 gap-4">
+                
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <a href="#" class="flex items-center gap-2.5 group">
+                        <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
+                            <i class="fa-solid font-bold fa-book-open text-xl"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-myeongjo text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">북모먼트</span>
+                            <span class="text-[10px] tracking-widest text-brand-600 dark:text-brand-200 uppercase font-bold">Book Moment</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Search Bar (Desktop) -->
+                <div class="hidden md:flex flex-1 max-w-md mx-8 relative">
+                    <div class="relative w-full">
+                        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="제목, 저자, 카테고리로 읽을거리를 찾아보세요..." 
+                            class="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm transition-all">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                        <button id="clearSearch" onclick="clearSearchInput()" class="hidden absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 text-sm">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <!-- Book Finder Quiz Button -->
+                    <button onclick="openQuizModal()" class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-600 dark:text-amber-400"></i>
+                        <span>내 취향 책 찾기</span>
+                    </button>
+
+                    <!-- Dark Mode Toggle -->
+                    <button onclick="toggleDarkMode()" class="p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title="화면 테마 변경">
+                        <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+                        <i class="fa-solid fa-sun hidden dark:block text-amber-400 text-lg"></i>
+                    </button>
+
+                    <!-- Wishlist -->
+                    <button onclick="showFavoritesModal()" class="p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors relative" title="보관함">
+                        <i class="fa-regular fa-heart text-lg"></i>
+                        <span id="favCountBadge" class="hidden absolute top-1 right-1 bg-brand-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                    </button>
+
+                    <!-- Cart Drawer Trigger -->
+                    <button onclick="toggleCartDrawer()" class="p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors relative" title="장바구니">
+                        <i class="fa-solid fa-bag-shopping text-lg"></i>
+                        <span id="cartCountBadge" class="absolute top-1 right-1 bg-brand-500 text-white text-[10px] min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center font-bold">0</span>
+                    </button>
+
+                    <!-- User Avatar Placeholder -->
+                    <button class="hidden sm:flex items-center gap-2 border border-slate-200 dark:border-slate-700 pl-2 pr-3 py-1.5 rounded-full hover:border-brand-500 transition-colors">
+                        <div class="w-6 h-6 rounded-full bg-slate-300 dark:bg-slate-600 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-200">
+                            나
+                        </div>
+                        <span class="text-xs font-medium text-slate-700 dark:text-slate-300">내 서재</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex items-center justify-between border-t border-slate-200/60 dark:border-slate-800/60 py-2.5 overflow-x-auto text-sm font-medium whitespace-nowrap scrollbar-none">
+                <div class="flex items-center space-x-6 sm:space-x-8">
+                    <a href="#hero" class="text-brand-600 dark:text-brand-400 font-semibold flex items-center gap-1.5">
+                        <i class="fa-solid fa-house text-xs"></i> 홈
+                    </a>
+                    <a href="#bestsellers" class="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">베스트셀러</a>
+                    <a href="#new-releases" class="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">신간 도서</a>
+                    <a href="#md-picks" class="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">MD 추천</a>
+                    <a href="#author-spotlight" class="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">이달의 작가</a>
+                    <a href="#calculator" class="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">독서 계산기</a>
+                </div>
+                <div class="hidden lg:flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-truck-fast text-brand-500"></i> 오늘 주문 시 내일 도착</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Banner Section -->
+    <section id="hero" class="relative overflow-hidden pt-8 pb-12 lg:py-16 bg-gradient-to-b from-orange-50/50 via-paper-light to-paper-light dark:from-slate-900 dark:to-paper-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <!-- Hero Left Content -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-semibold">
+                        <span class="flex h-2 w-2 rounded-full bg-brand-500 animate-ping"></span>
+                        2026년 이주의 특별 컬렉션
+                    </div>
+                    
+                    <h1 class="font-myeongjo text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white leading-tight">
+                        한 줄의 문장으로 시작하는<br>
+                        <span class="text-brand-600 dark:text-brand-400 underline decoration-amber-300 dark:decoration-amber-600 underline-offset-8">당신의 새로운 세계</span>
+                    </h1>
+                    
+                    <p class="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
+                        북모먼트 전문가들이 엄선한 최신 베스트셀러부터 고전의 깊이까지.<br class="hidden sm:inline">
+                        오늘 밤, 마음을 두드리는 책 한 권과 함께 평온한 시간을 선물하세요.
+                    </p>
+
+                    <!-- Hero Action Buttons -->
+                    <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+                        <a href="#bestsellers" class="px-6 py-3.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 transition-all flex items-center gap-2">
+                            <span>인기 도서 둘러보기</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                        <button onclick="openQuizModal()" class="px-6 py-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 font-semibold text-sm shadow-sm transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-compass text-amber-500"></i>
+                            <span>맞춤 책 추천받기</span>
+                        </button>
+                    </div>
+
+                    <!-- Trust Stats Badges -->
+                    <div class="pt-6 border-t border-slate-200/80 dark:border-slate-800 grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0">
+                        <div>
+                            <p class="text-2xl font-extrabold text-slate-900 dark:text-white font-myeongjo">12만+</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">보유 도서 수</p>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-extrabold text-slate-900 dark:text-white font-myeongjo">98.4%</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">독자 만족도</p>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-extrabold text-slate-900 dark:text-white font-myeongjo">24h</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">총고속 안심배송</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Right Book Feature Carousel/Preview -->
+                <div class="lg:col-span-5 relative flex justify-center">
+                    <!-- Background Accent Glow -->
+                    <div class="absolute inset-0 bg-amber-400/20 dark:bg-amber-600/10 rounded-full filter blur-3xl transform -scale-95"></div>
+                    
+                    <div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">🔥 지금 가장 뜨거운 책</span>
+                            <span class="bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full">주간 1위</span>
+                        </div>
+
+                        <!-- Highlight Book Info Card -->
+                        <div class="flex gap-4 items-start">
+                            <div class="w-28 sm:w-32 flex-shrink-0 book-shadow rounded-lg overflow-hidden bg-slate-200">
+                                <img id="heroBookCover" src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80" alt="Featured Book" class="w-full h-40 sm:h-44 object-cover">
+                            </div>
+                            <div class="flex-1 space-y-2">
+                                <span class="inline-block bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-2 py-0.5 rounded">소설 / 에세이</span>
+                                <h3 id="heroBookTitle" class="font-myeongjo font-bold text-lg text-slate-900 dark:text-white line-clamp-2">불편한 편의점</h3>
+                                <p id="heroBookAuthor" class="text-xs text-slate-500 dark:text-slate-400">김호연 저 · 나무옆의자</p>
+                                
+                                <div class="flex items-center gap-1 text-amber-400 text-xs py-1">
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                    <span class="text-slate-700 dark:text-slate-300 font-bold ml-1">4.9</span>
+                                    <span class="text-slate-400 text-[10px]">(3,420개 서평)</span>
+                                </div>
+                                
+                                <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 italic">
+                                    "힘겨운 시대를 살아가는 우리에게 따뜻한 위로와 웃음을 주는 이야기"
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-400 line-through">14,000원</span>
+                                <div class="text-lg font-bold text-brand-600 dark:text-brand-400">
+                                    12,600원 <span class="text-xs font-semibold text-red-500">(10%↓)</span>
+                                </div>
+                            </div>
+                            <button onclick="quickAddToCart(1)" class="px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-brand-600 dark:hover:bg-brand-400 dark:hover:text-white text-xs font-semibold transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-cart-plus"></i> 담기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Highlights -->
+    <section class="py-6 border-y border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                
+                <div class="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 text-lg">
+                        <i class="fa-solid fa-truck-ramp-box"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">총고속 안심배송</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">오후 3시 전 주문 시 당일 발송</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 text-lg">
+                        <i class="fa-solid fa-bookmark"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">친환경 단독 북마크</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">모든 도서 구매 시 증정</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 text-lg">
+                        <i class="fa-solid fa-gift"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">프리미엄 선물 포장</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">감성 메시지 카드 포함</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0 text-lg">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">최대 5% 적립금</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">리뷰 작성 시 추가 혜택</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Book Showcase Section -->
+    <section id="bestsellers" class="py-12 lg:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Section Title & Tabs -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                <div>
+                    <span class="text-xs font-bold text-brand-600 dark:text-brand-400 tracking-widest uppercase">Curated Collection</span>
+                    <h2 class="font-myeongjo text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+                        지금 독자들이 가장 선호하는 도서
+                    </h2>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="flex items-center gap-1.5 p-1 bg-slate-200/60 dark:bg-slate-800 rounded-xl overflow-x-auto text-xs font-medium scrollbar-none">
+                    <button onclick="setTab('all')" id="tab-all" class="tab-btn px-4 py-2 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm transition-all font-semibold">
+                        전체 보기
+                    </button>
+                    <button onclick="setTab('bestseller')" id="tab-bestseller" class="tab-btn px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+                        🔥 베스트셀러
+                    </button>
+                    <button onclick="setTab('new')" id="tab-new" class="tab-btn px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+                        ✨ 주목할 신간
+                    </button>
+                    <button onclick="setTab('md')" id="tab-md" class="tab-btn px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+                        💡 MD 추천
+                    </button>
+                </div>
+            </div>
+
+            <!-- Category Pills Filter -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none text-xs">
+                <button onclick="filterCategory('all')" class="cat-pill px-3.5 py-1.5 rounded-full bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 font-medium whitespace-nowrap transition-all">
+                    전체 분야
+                </button>
+                <button onclick="filterCategory('소설')" class="cat-pill px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-medium whitespace-nowrap transition-all">
+                    소설/시
+                </button>
+                <button onclick="filterCategory('자기계발')" class="cat-pill px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-medium whitespace-nowrap transition-all">
+                    자기계발
+                </button>
+                <button onclick="filterCategory('인문')" class="cat-pill px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-medium whitespace-nowrap transition-all">
+                    인문/철학
+                </button>
+                <button onclick="filterCategory('경제/경영')" class="cat-pill px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-medium whitespace-nowrap transition-all">
+                    경제/경영
+                </button>
+                <button onclick="filterCategory('에세이')" class="cat-pill px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-medium whitespace-nowrap transition-all">
+                    에세이
+                </button>
+            </div>
+
+            <!-- Book Grid Container -->
+            <div id="bookGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                <!-- Dynamic Content Rendered via JS -->
+            </div>
+
+            <!-- No Results Found State -->
+            <div id="noResults" class="hidden text-center py-16">
+                <i class="fa-solid fa-book-open-reader text-4xl text-slate-300 dark:text-slate-600 mb-3"></i>
+                <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">검색 조건에 맞는 도서가 없습니다</h3>
+                <p class="text-xs text-slate-500 mt-1">다른 키워드나 카테고리를 선택해 보세요.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Interactive Quiz Banner Section -->
+    <section class="py-12 bg-amber-500/10 dark:bg-slate-800/80 border-y border-amber-200/50 dark:border-slate-700 my-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-gradient-to-r from-brand-600 to-amber-600 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+                <!-- Background Pattern -->
+                <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-white/10 rounded-full blur-2xl"></div>
+                
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-semibold mb-3">
+                        ✨ 1분 맞춤 책 탐색기
+                    </span>
+                    <h3 class="font-myeongjo text-2xl sm:text-3xl font-extrabold leading-tight mb-3">
+                        지금 당신의 마음 상태에<br>딱 필요한 한 권을 찾아드릴게요
+                    </h3>
+                    <p class="text-amber-100 text-sm font-light mb-6">
+                        기분, 읽는 목적, 독서 스타일을 선택하시면 북모먼트 알고리즘이 완벽하게 일치하는 책을 추천합니다.
+                    </p>
+                    <button onclick="openQuizModal()" class="px-6 py-3 rounded-xl bg-white text-slate-900 font-bold text-sm shadow-md hover:bg-amber-50 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-brand-600"></i>
+                        <span>테스트 시작하기 (30초 소요)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Author Spotlight -->
+    <section id="author-spotlight" class="py-12 lg:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-slate-800/90 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-700 shadow-sm">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <div class="lg:col-span-4 flex flex-col items-center text-center">
+                        <div class="w-36 h-36 rounded-full overflow-hidden border-4 border-brand-100 dark:border-slate-700 shadow-md mb-4">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Author Spotlight" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">이달의 추천 작가</span>
+                        <h3 class="font-myeongjo text-xl font-bold text-slate-900 dark:text-white mt-1">김이나 작가</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">작사가 · 에세이스트</p>
+                    </div>
+
+                    <div class="lg:col-span-8 space-y-4">
+                        <i class="fa-solid fa-quote-left text-3xl text-brand-300 dark:text-brand-800"></i>
+                        <p class="font-myeongjo text-lg sm:text-xl text-slate-800 dark:text-slate-200 leading-relaxed italic">
+                            "문장은 우리가 마음에 남긴 보이지 않는 상처나 기쁨의 자국을 다듬어주는 손길 같습니다. 책을 읽는다는 것은 타인의 세계를 경청하며 나 자신과 화해하는 시간입니다."
+                        </p>
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase">대표작</h4>
+                                <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">《보통의 언어들》, 《내일 또 만나》</p>
+                            </div>
+                            <button onclick="filterCategory('에세이')" class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">
+                                <span>작가의 책 모아보기</span>
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reading Habit Calculator Widget Section -->
+    <section id="calculator" class="py-12 bg-slate-100/70 dark:bg-slate-900/40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center mb-8">
+                <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Reading Habit Calculator</span>
+                <h2 class="font-myeongjo text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+                    하루 20분의 독서, 1년이면 몇 권일까요?
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2">
+                    작은 습관이 만드는 놀라운 독서량을 직접 확인해 보세요.
+                </p>
+            </div>
+
+            <div class="max-w-xl mx-auto bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-md border border-slate-200 dark:border-slate-700 space-y-6">
+                <!-- Slider for minutes per day -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">하루 독서 시간</label>
+                        <span id="dailyMinutesText" class="text-sm font-extrabold text-brand-600 dark:text-brand-400">20분</span>
+                    </div>
+                    <input type="range" id="minuteSlider" min="5" max="120" step="5" value="20" oninput="calculateReading()" 
+                        class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-500">
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                        <span>5분</span>
+                        <span>30분</span>
+                        <span>60분</span>
+                        <span>120분</span>
+                    </div>
+                </div>
+
+                <!-- Slider for reading speed -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">독서 속도 (책 한 권 읽는 시간)</label>
+                        <span id="speedText" class="text-sm font-semibold text-slate-700 dark:text-slate-300">보통 (약 5시간)</span>
+                    </div>
+                    <select id="speedSelect" onchange="calculateReading()" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="3">빠름 (책 1권 당 약 3시간)</option>
+                        <option value="5" selected>보통 (책 1권 당 약 5시간)</option>
+                        <option value="8">천천히 깊게 (책 1권 당 약 8시간)</option>
+                    </select>
+                </div>
+
+                <!-- Calculation Result Display -->
+                <div class="bg-amber-50 dark:bg-slate-700/50 rounded-xl p-5 border border-amber-200/60 dark:border-slate-600 text-center">
+                    <p class="text-xs text-slate-600 dark:text-slate-300 mb-1">꾸준히 읽으신다면 1년 후엔...</p>
+                    <div class="text-3xl sm:text-4xl font-extrabold font-myeongjo text-brand-600 dark:text-brand-400 my-1">
+                        약 <span id="yearlyBooksCount">24</span>권의 책
+                    </div>
+                    <p id="calculatorEncouragement" class="text-xs text-amber-800 dark:text-amber-300 mt-2 font-medium">
+                        "매일 한 장씩 쌓여 큰 생각의 숲을 이룹니다."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reader Reviews & Community Section -->
+    <section class="py-12 lg:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-10">
+                <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Verified Reviews</span>
+                <h2 class="font-myeongjo text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+                    북모먼트 독자들의 진짜 서평
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex text-amber-400 text-xs">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                            "배송도 빠르고 종이 질감도 최고입니다. 특히 단독 제공해 주신 북마크 디자인이 예뻐서 책 읽는 기분이 훨씬 좋아졌어요."
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-200">
+                            이
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-900 dark:text-white">이*진 독자님</p>
+                            <p class="text-[10px] text-slate-400">《불편한 편의점》 구매</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex text-amber-400 text-xs">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                            "퇴근 후 어떤 책을 읽어야 할지 몰라 헤매곤 했는데, '내 취향 책 찾기' 퀴즈로 추천받은 인문 서적이 인생 책이 되었습니다!"
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-200">
+                            박
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-900 dark:text-white">박*우 독자님</p>
+                            <p class="text-[10px] text-slate-400">《세이노의 가르침》 구매</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex text-amber-400 text-xs">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                            "선물 포장 옵션을 선택했는데 지인에게 감동적인 선물이 되었습니다. 꼼꼼한 포장과 정성스러운 메시지 카드 감사합니다."
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-200">
+                            최
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-900 dark:text-white">최*선 독자님</p>
+                            <p class="text-[10px] text-slate-400">《원씽》 구매</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter & Coupon Banner Section -->
+    <section id="newsletter" class="py-12 bg-slate-900 text-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <div class="lg:col-span-7 space-y-3 text-center lg:text-left">
+                    <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">BookMoment Newsletter</span>
+                    <h3 class="font-myeongjo text-2xl sm:text-3xl font-extrabold">
+                        매주 금요일 아침, 마음을 채우는 문장을 배달합니다
+                    </h3>
+                    <p class="text-slate-300 text-xs sm:text-sm font-light">
+                        구독 시 신규 회원 전용 <b class="text-amber-400">3,000원 즉시 할인 쿠폰</b>과 이주의 책 요약본을 보내드립니다.
+                    </p>
+                </div>
+
+                <div class="lg:col-span-5">
+                    <form onsubmit="handleSubscribe(event)" class="flex flex-col sm:flex-row gap-2 max-w-md mx-auto lg:mx-0">
+                        <input type="email" required placeholder="이메일 주소를 입력해 주세요" 
+                            class="px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 flex-1">
+                        <button type="submit" class="px-5 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs transition-colors whitespace-nowrap shadow-md">
+                            쿠폰 받고 구독하기
+                        </button>
+                    </form>
+                    <p class="text-[10px] text-slate-500 text-center lg:text-left mt-2">스팸은 절대 보내지 않으며, 언제든 구독 해제 가능합니다.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="bg-slate-950 text-slate-400 text-xs py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-8">
+                
+                <div class="col-span-2 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center text-white font-bold">
+                            <i class="fa-solid fa-book-open text-xs"></i>
+                        </div>
+                        <span class="font-myeongjo text-lg font-bold text-white">북모먼트</span>
+                    </div>
+                    <p class="text-slate-400 text-xs leading-relaxed max-w-sm">
+                        북모먼트는 읽는 삶의 즐거움을 전하는 온라인 서점입니다. 엄선된 큐레이션과 따뜻한 서평으로 당신의 일상을 풍요롭게 채웁니다.
+                    </p>
+                    <div class="flex items-center gap-3 pt-2 text-slate-400">
+                        <a href="#" class="hover:text-white transition-colors"><i class="fa-brands fa-instagram text-base"></i></a>
+                        <a href="#" class="hover:text-white transition-colors"><i class="fa-brands fa-youtube text-base"></i></a>
+                        <a href="#" class="hover:text-white transition-colors"><i class="fa-brands fa-facebook text-base"></i></a>
+                        <a href="#" class="hover:text-white transition-colors"><i class="fa-solid fa-blog text-base"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="font-bold text-white mb-3">도서 탐색</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#bestsellers" class="hover:text-white transition-colors">베스트셀러</a></li>
+                        <li><a href="#new-releases" class="hover:text-white transition-colors">신간 도서</a></li>
+                        <li><a href="#md-picks" class="hover:text-white transition-colors">MD 추천작</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">북모먼트 단독 도서</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="font-bold text-white mb-3">고객지원</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-white transition-colors">공지사항 및 이벤트</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">1:1 문의하기</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">배송 / 교환 / 반품</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">단체 주문 문의</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="font-bold text-white mb-3">고객센터</h5>
+                    <p class="text-lg font-bold text-brand-400">1588-0000</p>
+                    <p class="text-[11px] text-slate-500 mt-1">평일 09:00 - 18:00 (주말/공휴일 휴무)</p>
+                    <p class="text-[11px] text-slate-500">점심시간 12:00 - 13:00</p>
+                </div>
+
+            </div>
+
+            <div class="pt-8 border-t border-slate-900 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+                <p>© 2026 BookMoment Inc. All rights reserved. (주)북모먼트 사업자 정보</p>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:underline">이용약관</a>
+                    <a href="#" class="hover:underline font-bold text-slate-400">개인정보처리방침</a>
+                    <a href="#" class="hover:underline">청소년보호방침</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal 1: Book Quick View Modal -->
+    <div id="quickViewModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 relative shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeQuickViewModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white p-2 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="quickViewContent">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Cart Drawer (Slide Over) -->
+    <div id="cartDrawer" class="fixed inset-0 z-50 overflow-hidden hidden">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="toggleCartDrawer()"></div>
+        <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div class="w-screen max-w-md bg-white dark:bg-slate-800 shadow-2xl flex flex-col">
+                <div class="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-bag-shopping text-brand-600 dark:text-brand-400"></i>
+                        <h3 class="font-bold text-slate-900 dark:text-white">장바구니</h3>
+                    </div>
+                    <button onclick="toggleCartDrawer()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div id="cartItemsList" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                    <!-- Cart items rendered via JS -->
+                </div>
+
+                <div class="p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-3">
+                    <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                        <span>상품 합계</span>
+                        <span id="cartSubtotal">0원</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                        <span>배송비</span>
+                        <span id="cartShipping">0원 (3만원 이상 무료)</span>
+                    </div>
+                    <div class="flex justify-between text-base font-extrabold text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <span>총 결제금액</span>
+                        <span id="cartTotal" class="text-brand-600 dark:text-brand-400">0원</span>
+                    </div>
+                    <button onclick="simulateCheckout()" class="w-full py-3.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2">
+                        <span>주문하기</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Book Recommendation Quiz Modal -->
+    <div id="quizModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 relative shadow-2xl border border-slate-200 dark:border-slate-700">
+            <button onclick="closeQuizModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white p-2">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <div id="quizStepContainer">
+                <!-- Quiz Steps Rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Favorites / Wishlist Modal -->
+    <div id="favModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 relative shadow-2xl border border-slate-200 dark:border-slate-700">
+            <button onclick="closeFavModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-heart text-red-500"></i> 내가 찜한 도서
+            </h3>
+            <div id="favList" class="space-y-3 max-h-80 overflow-y-auto">
+                <!-- Wishlist items -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const booksData = [
+            {
+                id: 1,
+                title: "불편한 편의점",
+                author: "김호연",
+                category: "소설",
+                price: 14000,
+                discount: 10,
+                rating: 4.9,
+                reviewsCount: 3420,
+                isBestseller: true,
+                isNew: false,
+                isMD: true,
+                cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80",
+                description: "청파동 골목길 작은 편의점을 무대로 각자의 사연을 안고 살아가는 사람들의 따스한 연결과 위로를 다룬 감동 소설.",
+                moodTag: "comfort"
+            },
+            {
+                id: 2,
+                title: "원씽 (The ONE Thing)",
+                author: "게리 켈러, 제이 파파산",
+                category: "자기계발",
+                price: 17000,
+                discount: 10,
+                rating: 4.8,
+                reviewsCount: 2150,
+                isBestseller: true,
+                isNew: false,
+                isMD: false,
+                cover: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=400&q=80",
+                description: "복잡한 삶에서 나만의 단 하나의 중요한 목적에 집중하여 최고 성과를 이끌어내는 생산성의 비밀.",
+                moodTag: "motivation"
+            },
+            {
+                id: 3,
+                title: "세이노의 가르침",
+                author: "세이노",
+                category: "인문",
+                price: 7200,
+                discount: 10,
+                rating: 4.9,
+                reviewsCount: 4890,
+                isBestseller: true,
+                isNew: false,
+                isMD: true,
+                cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=400&q=80",
+                description: "피도 눈물도 없는 냉철한 현실 지각과 함께 진짜 내 삶의 주인이 되는 통찰과 노하우 제공.",
+                moodTag: "wisdom"
+            },
+            {
+                id: 4,
+                title: "도파민 네이션",
+                author: "애나 렘키",
+                category: "인문",
+                price: 18000,
+                discount: 10,
+                rating: 4.7,
+                reviewsCount: 1320,
+                isBestseller: false,
+                isNew: true,
+                isMD: true,
+                cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80",
+                description: "쾌락과 중독의 시대에서 균형을 잡고 내면의 지속 가능한 평온을 되찾는 과학적 접근법.",
+                moodTag: "wisdom"
+            },
+            {
+                id: 5,
+                title: "마흔에 읽는 쇼펜하우어",
+                author: "강용수",
+                category: "인문",
+                price: 17000,
+                discount: 10,
+                rating: 4.8,
+                reviewsCount: 1840,
+                isBestseller: true,
+                isNew: true,
+                isMD: false,
+                cover: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=400&q=80",
+                description: "인생의 중반전, 삶의 고통과 외로움을 다스리고 나다운 단단함을 다지는 철학자의 지혜.",
+                moodTag: "comfort"
+            },
+            {
+                id: 6,
+                title: "트렌드 코리아 2026",
+                author: "김난도 외",
+                category: "경제/경영",
+                price: 19000,
+                discount: 10,
+                rating: 4.6,
+                reviewsCount: 950,
+                isBestseller: false,
+                isNew: true,
+                isMD: true,
+                cover: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80",
+                description: "대한민국 소비 트렌드의 핵심 키워드와 다가올 변화의 흐름을 날카롭게 예측한 필수 전망서.",
+                moodTag: "motivation"
+            },
+            {
+                id: 7,
+                title: "어린 왕자 (특별 양장본)",
+                author: "앙투안 드 생텍쥐페리",
+                category: "소설",
+                price: 12000,
+                discount: 10,
+                rating: 5.0,
+                reviewsCount: 5200,
+                isBestseller: true,
+                isNew: false,
+                isMD: false,
+                cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80",
+                description: "가장 중요한 것은 눈에 보이지 않아. 어른들을 위해 다시 다가온 불멸의 클래식 소설.",
+                moodTag: "comfort"
+            },
+            {
+                id: 8,
+                title: "보통의 언어들",
+                author: "김이나",
+                category: "에세이",
+                price: 14500,
+                discount: 10,
+                rating: 4.9,
+                reviewsCount: 2980,
+                isBestseller: false,
+                isNew: false,
+                isMD: true,
+                cover: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=400&q=80",
+                description: "우리가 세상을 바라보는 섬세한 시선과 일상에서 자주 쓰는 단어 속에 담긴 깊은 위로.",
+                moodTag: "comfort"
+            }
+        ];
+
+        let currentTab = 'all';
+        let currentCategory = 'all';
+        let searchQuery = '';
+        let cart = [];
+        let favorites = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderBooks();
+            updateCartCount();
+            updateFavCount();
+            calculateReading();
+        });
+
+        function renderBooks() {
+            const grid = document.getElementById('bookGrid');
+            const noRes = document.getElementById('noResults');
+
+            let filtered = booksData.filter(book => {
+                // Filter by Tab
+                if (currentTab === 'bestseller' && !book.isBestseller) return false;
+                if (currentTab === 'new' && !book.isNew) return false;
+                if (currentTab === 'md' && !book.isMD) return false;
+
+                // Filter by Category
+                if (currentCategory !== 'all' && book.category !== currentCategory) return false;
+
+                // Filter by Search
+                if (searchQuery.trim() !== '') {
+                    const q = searchQuery.toLowerCase();
+                    const titleMatch = book.title.toLowerCase().includes(q);
+                    const authorMatch = book.author.toLowerCase().includes(q);
+                    const categoryMatch = book.category.toLowerCase().includes(q);
+                    if (!titleMatch && !authorMatch && !categoryMatch) return false;
+                }
+
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noRes.classList.remove('hidden');
+                return;
+            } else {
+                noRes.classList.add('hidden');
+            }
+
+            grid.innerHTML = filtered.map(book => {
+                const isFav = favorites.includes(book.id);
+                const finalPrice = Math.floor(book.price * (1 - book.discount / 100));
+
+                return `
+                    <div class="group bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative">
+                        
+                        <!-- Badges & Wishlist -->
+                        <div class="flex items-center justify-between mb-3 z-10">
+                            <div class="flex gap-1">
+                                ${book.isBestseller ? '<span class="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">베스트</span>' : ''}
+                                ${book.isNew ? '<span class="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded">신간</span>' : ''}
+                            </div>
+                            <button onclick="toggleFavorite(event, ${book.id})" class="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1">
+                                <i class="${isFav ? 'fa-solid fa-heart text-red-500' : 'fa-regular fa-heart'} text-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- Cover Image Container -->
+                        <div class="relative mb-4 cursor-pointer overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700 flex justify-center py-2" onclick="openQuickViewModal(${book.id})">
+                            <img src="${book.cover}" alt="${book.title}" class="h-48 sm:h-52 object-cover book-shadow book-shadow-hover rounded">
+                            <div class="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span class="bg-white/90 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">빠르게 보기</span>
+                            </div>
+                        </div>
+
+                        <!-- Book Info -->
+                        <div class="space-y-1.5 flex-1 cursor-pointer" onclick="openQuickViewModal(${book.id})">
+                            <span class="text-[11px] font-medium text-slate-400 dark:text-slate-500">${book.category}</span>
+                            <h3 class="font-myeongjo font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                                ${book.title}
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">${book.author}</p>
+                            
+                            <div class="flex items-center gap-1 text-amber-400 text-xs pt-0.5">
+                                <i class="fa-solid fa-star"></i>
+                                <span class="text-slate-700 dark:text-slate-300 font-bold ml-0.5">${book.rating}</span>
+                                <span class="text-slate-400 text-[10px]">(${book.reviewsCount})</span>
+                            </div>
+                        </div>
+
+                        <!-- Price and Cart Button -->
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] text-slate-400 line-through">${book.price.toLocaleString()}원</span>
+                                <div class="text-sm font-extrabold text-slate-900 dark:text-white">
+                                    ${finalPrice.toLocaleString()}원
+                                </div>
+                            </div>
+                            <button onclick="quickAddToCart(${book.id})" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-brand-500 hover:text-white dark:hover:bg-brand-500 text-slate-700 dark:text-slate-200 transition-colors" title="장바구니 담기">
+                                <i class="fa-solid fa-cart-plus text-xs"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'dark:bg-slate-700', 'text-slate-900', 'dark:text-white', 'shadow-sm', 'font-semibold');
+                btn.classList.add('text-slate-600', 'dark:text-slate-400');
+            });
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-white', 'dark:bg-slate-700', 'text-slate-900', 'dark:text-white', 'shadow-sm', 'font-semibold');
+                activeBtn.classList.remove('text-slate-600', 'dark:text-slate-400');
+            }
+            renderBooks();
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                btn.classList.remove('bg-slate-900', 'text-white', 'dark:bg-slate-100', 'dark:text-slate-900');
+                btn.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
+            });
+            event.currentTarget.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
+            event.currentTarget.classList.add('bg-slate-900', 'text-white', 'dark:bg-slate-100', 'dark:text-slate-900');
+            renderBooks();
+        }
+
+        function handleSearch() {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            searchQuery = input.value;
+            if (searchQuery.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderBooks();
+        }
+
+        function clearSearchInput() {
+            document.getElementById('searchInput').value = '';
+            searchQuery = '';
+            document.getElementById('clearSearch').classList.add('hidden');
+            renderBooks();
+        }
+
+        function quickAddToCart(bookId) {
+            const existing = cart.find(item => item.id === bookId);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                const book = booksData.find(b => b.id === bookId);
+                cart.push({ ...book, qty: 1 });
+            }
+            updateCartCount();
+            renderCartItems();
+            showToast('장바구니에 상품이 담겼습니다 🛒');
+        }
+
+        function updateCartCount() {
+            const totalQty = cart.reduce((acc, item) => acc + item.qty, 0);
+            const badge = document.getElementById('cartCountBadge');
+            badge.innerText = totalQty;
+        }
+
+        function toggleCartDrawer() {
+            const drawer = document.getElementById('cartDrawer');
+            drawer.classList.toggle('hidden');
+            renderCartItems();
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cartItemsList');
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-cart-flatbed text-3xl mb-2"></i>
+                        <p class="text-xs">장바구니가 비어 있습니다.</p>
+                    </div>
+                `;
+                document.getElementById('cartSubtotal').innerText = '0원';
+                document.getElementById('cartShipping').innerText = '0원';
+                document.getElementById('cartTotal').innerText = '0원';
+                return;
+            }
+
+            let subtotal = 0;
+            container.innerHTML = cart.map(item => {
+                const itemPrice = Math.floor(item.price * (1 - item.discount / 100));
+                subtotal += itemPrice * item.qty;
+
+                return `
+                    <div class="flex gap-3 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-200/60 dark:border-slate-600">
+                        <img src="${item.cover}" class="w-14 h-20 object-cover rounded shadow-sm">
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">${item.title}</h4>
+                                <p class="text-[10px] text-slate-400">${item.author}</p>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-lg px-2 py-0.5 border border-slate-200 dark:border-slate-600">
+                                    <button onclick="changeQty(${item.id}, -1)" class="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white">-</button>
+                                    <span class="text-xs font-bold">${item.qty}</span>
+                                    <button onclick="changeQty(${item.id}, 1)" class="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white">+</button>
+                                </div>
+                                <span class="text-xs font-bold text-brand-600 dark:text-brand-400">${(itemPrice * item.qty).toLocaleString()}원</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const shipping = subtotal >= 30000 || subtotal === 0 ? 0 : 3000;
+            const total = subtotal + shipping;
+
+            document.getElementById('cartSubtotal').innerText = `${subtotal.toLocaleString()}원`;
+            document.getElementById('cartShipping').innerText = shipping === 0 ? '무료' : `${shipping.toLocaleString()}원`;
+            document.getElementById('cartTotal').innerText = `${total.toLocaleString()}원`;
+        }
+
+        function changeQty(bookId, delta) {
+            const item = cart.find(i => i.id === bookId);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) {
+                    cart = cart.filter(i => i.id !== bookId);
+                }
+            }
+            updateCartCount();
+            renderCartItems();
+        }
+
+        function simulateCheckout() {
+            if (cart.length === 0) {
+                showToast('장바구니가 비어 있습니다.');
+                return;
+            }
+            showToast('🎉 주문 결제 단계로 이동합니다! (데모)');
+            cart = [];
+            updateCartCount();
+            toggleCartDrawer();
+        }
+
+        function toggleFavorite(e, bookId) {
+            e.stopPropagation();
+            if (favorites.includes(bookId)) {
+                favorites = favorites.filter(id => id !== bookId);
+                showToast('보관함에서 삭제되었습니다.');
+            } else {
+                favorites.push(bookId);
+                showToast('보관함에 저장되었습니다 ❤️');
+            }
+            updateFavCount();
+            renderBooks();
+        }
+
+        function updateFavCount() {
+            const badge = document.getElementById('favCountBadge');
+            badge.innerText = favorites.length;
+            if (favorites.length > 0) {
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function showFavoritesModal() {
+            const modal = document.getElementById('favModal');
+            const list = document.getElementById('favList');
+            modal.classList.remove('hidden');
+
+            if (favorites.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">찜한 상품이 없습니다.</p>`;
+                return;
+            }
+
+            const favBooks = booksData.filter(b => favorites.includes(b.id));
+            list.innerHTML = favBooks.map(b => `
+                <div class="flex items-center justify-between gap-3 p-2 border-b border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center gap-3">
+                        <img src="${b.cover}" class="w-10 h-14 object-cover rounded">
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">${b.title}</h4>
+                            <p class="text-[10px] text-slate-400">${b.author}</p>
+                        </div>
+                    </div>
+                    <button onclick="quickAddToCart(${b.id})" class="px-3 py-1.5 bg-brand-500 text-white rounded-lg text-xs font-bold">담기</button>
+                </div>
+            `).join('');
+        }
+
+        function closeFavModal() {
+            document.getElementById('favModal').classList.add('hidden');
+        }
+
+        function openQuickViewModal(bookId) {
+            const book = booksData.find(b => b.id === bookId);
+            if (!book) return;
+
+            const finalPrice = Math.floor(book.price * (1 - book.discount / 100));
+            const container = document.getElementById('quickViewContent');
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                    <div class="md:col-span-5 flex justify-center">
+                        <img src="${book.cover}" class="w-44 sm:w-52 object-cover rounded-lg book-shadow">
+                    </div>
+                    <div class="md:col-span-7 space-y-3">
+                        <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase">${book.category}</span>
+                        <h2 class="font-myeongjo text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">${book.title}</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">${book.author} 저</p>
+                        
+                        <div class="flex items-center gap-1 text-amber-400 text-xs py-1">
+                            <i class="fa-solid fa-star"></i>
+                            <span class="text-slate-800 dark:text-slate-200 font-bold ml-1">${book.rating}</span>
+                            <span class="text-slate-400 text-[10px]">(${book.reviewsCount}개의 서평)</span>
+                        </div>
+
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pt-2 border-t border-slate-100 dark:border-slate-700">
+                            ${book.description}
+                        </p>
+
+                        <div class="pt-3">
+                            <span class="text-xs text-slate-400 line-through">${book.price.toLocaleString()}원</span>
+                            <div class="text-xl font-extrabold text-brand-600 dark:text-brand-400">
+                                ${finalPrice.toLocaleString()}원 <span class="text-xs text-red-500 font-bold">(${book.discount}% 할인)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3 pt-3">
+                            <button onclick="quickAddToCart(${book.id}); closeQuickViewModal();" class="flex-1 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-xs transition-colors shadow">
+                                장바구니 담기
+                            </button>
+                            <button onclick="toggleFavorite(event, ${book.id})" class="px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs">
+                                <i class="fa-regular fa-heart text-base"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('quickViewModal').classList.remove('hidden');
+        }
+
+        function closeQuickViewModal() {
+            document.getElementById('quickViewModal').classList.add('hidden');
+        }
+
+        let quizAnswers = { mood: '', purpose: '' };
+
+        function openQuizModal() {
+            quizAnswers = { mood: '', purpose: '' };
+            renderQuizStep(1);
+            document.getElementById('quizModal').classList.remove('hidden');
+        }
+
+        function closeQuizModal() {
+            document.getElementById('quizModal').classList.add('hidden');
+        }
+
+        function renderQuizStep(step) {
+            const container = document.getElementById('quizStepContainer');
+
+            if (step === 1) {
+                container.innerHTML = `
+                    <div class="text-center space-y-4">
+                        <span class="text-xs font-bold text-brand-600 uppercase">Q1. 기분 / 상태</span>
+                        <h3 class="font-myeongjo text-xl font-bold text-slate-900 dark:text-white">오늘 당신이 끌리는 기분은 무엇인가요?</h3>
+                        <div class="grid grid-cols-1 gap-2 pt-2">
+                            <button onclick="selectQuizAnswer('mood', 'comfort', 2)" class="p-3 text-left border border-slate-200 dark:border-slate-700 rounded-xl hover:border-brand-500 hover:bg-amber-50 dark:hover:bg-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 transition-all flex items-center justify-between">
+                                <span>🌿 지친 마음에 차분한 위로와 힐링이 필요해요</span>
+                                <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                            </button>
+                            <button onclick="selectQuizAnswer('mood', 'motivation', 2)" class="p-3 text-left border border-slate-200 dark:border-slate-700 rounded-xl hover:border-brand-500 hover:bg-amber-50 dark:hover:bg-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 transition-all flex items-center justify-between">
+                                <span>🔥 확실한 동기부여와 지적 자극을 원해요</span>
+                                <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                            </button>
+                            <button onclick="selectQuizAnswer('mood', 'wisdom', 2)" class="p-3 text-left border border-slate-200 dark:border-slate-700 rounded-xl hover:border-brand-500 hover:bg-amber-50 dark:hover:bg-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 transition-all flex items-center justify-between">
+                                <span>💡 삶의 방향을 다잡을 깊이 있는 지혜가 궁굼해요</span>
+                                <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (step === 2) {
+                // Show Recommendation Output
+                const matchedBook = booksData.find(b => b.moodTag === quizAnswers.mood) || booksData[0];
+                const finalPrice = Math.floor(matchedBook.price * (1 - matchedBook.discount / 100));
+
+                container.innerHTML = `
+                    <div class="text-center space-y-4">
+                        <span class="inline-block px-3 py-1 bg-amber-100 text-amber-900 rounded-full text-xs font-bold">🎉 맞춤 추천 도서 도착</span>
+                        <h3 class="font-myeongjo text-xl font-bold text-slate-900 dark:text-white">당신을 위해 준비된 책입니다</h3>
+                        
+                        <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600 flex flex-col items-center gap-3">
+                            <img src="${matchedBook.cover}" class="w-32 h-44 object-cover rounded-lg book-shadow">
+                            <div>
+                                <h4 class="font-myeongjo font-bold text-base text-slate-900 dark:text-white">${matchedBook.title}</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">${matchedBook.author} 저</p>
+                                <p class="text-xs text-slate-600 dark:text-slate-300 mt-2 italic px-2">"${matchedBook.description}"</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="quickAddToCart(${matchedBook.id}); closeQuizModal();" class="flex-1 py-3 bg-brand-500 text-white font-bold rounded-xl text-xs shadow hover:bg-brand-600 transition-colors">
+                                ${finalPrice.toLocaleString()}원에 구매하기
+                            </button>
+                            <button onclick="openQuizModal()" class="px-4 py-3 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white rounded-xl text-xs font-semibold">
+                                다시 하기
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function selectQuizAnswer(key, val, nextStep) {
+            quizAnswers[key] = val;
+            renderQuizStep(nextStep);
+        }
+
+        function calculateReading() {
+            const mins = parseInt(document.getElementById('minuteSlider').value);
+            const speedHours = parseInt(document.getElementById('speedSelect').value);
+
+            document.getElementById('dailyMinutesText').innerText = `${mins}분`;
+
+            // Yearly total minutes = mins * 365
+            // Total hours = (mins * 365) / 60
+            // Total books = Total hours / speedHours
+            const totalHoursYearly = (mins * 365) / 60;
+            const booksYearly = Math.round(totalHoursYearly / speedHours);
+
+            document.getElementById('yearlyBooksCount').innerText = booksYearly;
+
+            const encouraging = document.getElementById('calculatorEncouragement');
+            if (booksYearly < 10) {
+                encouraging.innerText = '"매일 작은 습관이 만드는 놀라운 독서의 변화입니다."';
+            } else if (booksYearly < 30) {
+                encouraging.innerText = '"한 달에 2권 이상, 세상을 보는 안목이 넓어지는 시간입니다."';
+            } else {
+                encouraging.innerText = '"탁월한 독서가! 거인의 어깨 위에서 세상을 바라보게 됩니다."';
+            }
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 transform transition-all duration-300 translate-y-4 opacity-0';
+            toast.innerHTML = `<span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function handleSubscribe(e) {
+            e.preventDefault();
+            showToast('🎁 구독이 완료되었습니다! 할인 쿠폰이 발송되었습니다.');
+            e.target.reset();
+        }
+    </script>
+</body>
+</html>
